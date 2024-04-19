@@ -1,0 +1,16 @@
+{
+  "name": "fx-runner",
+  "private": true,
+  "scripts": {
+    "start": "ts-node-dev --project ./tsconfig-dev.json --respawn ./node.ts"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}
