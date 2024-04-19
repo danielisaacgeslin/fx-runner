@@ -2,7 +2,8 @@
   "name": "fx-runner",
   "private": true,
   "scripts": {
-    "start": "ts-node-dev --project ./tsconfig-dev.json --respawn ./node.ts"
+    "start": "ts-node-dev --project ./tsconfig-dev.json --respawn ./node.ts",
+    "ts:check": "tsc --project ./tsconfig.json --noEmit --skipLibCheck"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.0",
