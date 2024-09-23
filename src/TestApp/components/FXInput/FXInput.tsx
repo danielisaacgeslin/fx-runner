@@ -3,22 +3,36 @@ import { styles } from './styles';
 import { runFx } from '../../../main';
 import { safeParse } from './safeParse';
 
-const initialFx =
-  '{"hardcoded":1,"simpleRef":"{{obj.str}}","complexRef":"one ref: {{obj.str}}. then another ref: {{obj.num}}.","simpleFx":{"$fx_add":[2,2]},"refFx":{"$fx_add":[2,"{{obj.num}}"]},"nestedFx":{"$fx_add":[{"$fx_add":[2,2]},2]},"obj":{"strFx":{"$fx_join":[["a name:","{{obj.str}}"]," "]},"mathFx":{"$fx_add":[5,"{{obj.num}}"]}},"equal":{"$fx_isEqual":[{"a":1},{"a":1}]},"notEqual":{"$fx_isEqual":[{"a":1},{"a":1,"b":3}]},"refToObj":"{{obj}}","refToFx":"{{obj.fx}}"}';
+const initialFx = '$fx_capitalize($fx_join($fx_concat("there are",$fx_multiply($fx_divide(16, $fx_add(1, $fx_add(3, 4))), 2), "{{obj.fruitName}}"), " "))';
 
-const initialPayload = '{"obj":{"str":"a string","num":100,"fx":{"$fx_add":[1,1]}}}';
+const initialPayload = JSON.stringify({ obj: { fruitName: 'apples' } });
 
-// $fx_add(1, $fx_add(3, 4))
-// $fx_eq(4, $fx_add(1, $fx_add(1, $fx_add(1, 1))))
+function splitArgs(input) {
+  let results = [];
+  let current = '';
+  let balance = 0;
+
+  for (const char of input) {
+    if (char === '(') balance++;
+    else if (char === ')') balance--;
+
+    if (char === ',' && balance === 0) {
+      results = [...results, current.trim()];
+      current = '';
+    } else current = `${current}${char}`;
+  }
+
+  if (current) results = [...results, current.trim()];
+
+  return results;
+}
 
 const parseFxFromStr = (input: string) => {
   const fxReg = /^(\$fx_\w+)\((.*)\)$/;
-  /** @todo this regex doesn't work well splitting comma separated args when there is too much nesting */
-  const argsReg = /[^,()]+(?:\([^()]*\)|\([^)]+\([^()]*\)\))?/g;
   if (!fxReg.test(input?.trim())) return safeParse(input?.trim(), undefined);
 
   const [, operator, argStr] = input.trim().match(fxReg);
-  const args = argStr?.trim()?.match(argsReg);
+  const args = splitArgs(argStr);
 
   return { [operator?.trim()]: args?.map(a => parseFxFromStr(a)) };
 };
