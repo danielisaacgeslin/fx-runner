@@ -8,6 +8,21 @@ const initialFx =
 
 const initialPayload = '{"obj":{"str":"a string","num":100,"fx":{"$fx_add":[1,1]}}}';
 
+// $fx_add(1, $fx_add(3, 4))
+// $fx_eq(4, $fx_add(1, $fx_add(1, $fx_add(1, 1))))
+
+const parseFxFromStr = (input: string) => {
+  const fxReg = /^(\$fx_\w+)\((.*)\)$/;
+  /** @todo this regex doesn't work well splitting comma separated args when there is too much nesting */
+  const argsReg = /[^,()]+(?:\([^()]*\)|\([^)]+\([^()]*\)\))?/g;
+  if (!fxReg.test(input?.trim())) return safeParse(input?.trim(), undefined);
+
+  const [, operator, argStr] = input.trim().match(fxReg);
+  const args = argStr?.trim()?.match(argsReg);
+
+  return { [operator?.trim()]: args?.map(a => parseFxFromStr(a)) };
+};
+
 export const FXInput = () => {
   const [fx, setFx] = useState<string>(initialFx);
   const [payload, setPayload] = useState<string>(initialPayload);
@@ -15,7 +30,8 @@ export const FXInput = () => {
   const onFxChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => setFx(event.target.value), []);
   const onPayloadChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => setPayload(event.target.value), []);
 
-  const parsedFx = useMemo(() => safeParse(fx, null), [fx]);
+  const parsedFx = useMemo(() => parseFxFromStr(fx), [fx]);
+
   const parsedPayload = useMemo(() => safeParse(payload, null), [payload]);
 
   const result: string = useMemo(() => {
