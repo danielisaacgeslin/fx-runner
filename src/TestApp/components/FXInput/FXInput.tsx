@@ -31,7 +31,7 @@ export const FXInput = () => {
   const onPayloadChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => setPayload(event.target.value), []);
 
   const parsedFx = useMemo(() => parseFxFromStr(fx), [fx]);
-
+  const formattedFx = useMemo(() => (parsedFx ? JSON.stringify(parsedFx, null, 4) : ''), [parsedFx]);
   const parsedPayload = useMemo(() => safeParse(payload, null), [payload]);
 
   const result: string = useMemo(() => {
@@ -47,17 +47,23 @@ export const FXInput = () => {
     <div css={styles.container}>
       <div css={styles.fxContainer}>
         <div>
-          <p>Fx</p>
+          <p>Edit fx</p>
           <textarea onChange={onFxChange} value={fx} css={[styles.input, !!fx && !parsedFx && styles.error]} rows={10} />
         </div>
         <div>
-          <p>Payload</p>
+          <p>Edit payload</p>
           <textarea onChange={onPayloadChange} value={payload} css={[styles.input, !!payload && !parsedPayload && styles.error]} rows={10} />
         </div>
       </div>
-      <div>
-        <p>Result</p>
-        <pre css={styles.result}>{result}</pre>
+      <div css={styles.resultContainer}>
+        <div css={styles.resultItem}>
+          <p>Fx JSON</p>
+          <pre css={styles.result}>{formattedFx}</pre>
+        </div>
+        <div css={styles.resultItem}>
+          <p>Result</p>
+          <pre css={styles.result}>{result}</pre>
+        </div>
       </div>
     </div>
   );
