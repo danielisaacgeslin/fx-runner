@@ -1,41 +1,12 @@
 import { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { styles } from './styles';
 import { runFx } from '../../../main';
-import { safeParse } from './safeParse';
+import { safeParse } from '../../../utils/safeParse';
+import { getFxFromStr } from '../../../utils/getFxFromStr';
 
 const initialFx = '$capitalize($join($concat("there are",$multiply($divide(16, $add(1, $add(3, 4))), 2), "{{obj.fruitName}}"), " "))';
 
 const initialPayload = JSON.stringify({ obj: { fruitName: 'apples' } }, null, 4);
-
-function splitArgs(input) {
-  let results = [];
-  let current = '';
-  let balance = 0;
-
-  for (const char of input) {
-    if (char === '(') balance++;
-    else if (char === ')') balance--;
-
-    if (char === ',' && balance === 0) {
-      results = [...results, current.trim()];
-      current = '';
-    } else current = `${current}${char}`;
-  }
-
-  if (current) results = [...results, current.trim()];
-
-  return results;
-}
-
-const parseFxFromStr = (input: string) => {
-  const fxReg = /^(\$\w+)\((.*)\)$/;
-  if (!fxReg.test(input?.trim())) return safeParse(input?.trim(), undefined);
-
-  const [, operator, argStr] = input.trim().match(fxReg);
-  const args = splitArgs(argStr);
-
-  return { [operator?.trim()]: args?.map(a => parseFxFromStr(a)) };
-};
 
 export const FXInput = () => {
   const [fx, setFx] = useState<string>(initialFx);
@@ -44,7 +15,7 @@ export const FXInput = () => {
   const onFxChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => setFx(event.target.value), []);
   const onPayloadChange = useCallback((event: ChangeEvent<HTMLTextAreaElement>) => setPayload(event.target.value), []);
 
-  const parsedFx = useMemo(() => parseFxFromStr(fx), [fx]);
+  const parsedFx = useMemo(() => getFxFromStr(fx), [fx]);
   const formattedFx = useMemo(() => (parsedFx ? JSON.stringify(parsedFx, null, 4) : ''), [parsedFx]);
   const parsedPayload = useMemo(() => safeParse(payload, null), [payload]);
 
