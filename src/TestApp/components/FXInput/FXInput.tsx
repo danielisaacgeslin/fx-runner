@@ -3,9 +3,9 @@ import { styles } from './styles';
 import { runFx } from '../../../main';
 import { safeParse } from './safeParse';
 
-const initialFx = '$fx_capitalize($fx_join($fx_concat("there are",$fx_multiply($fx_divide(16, $fx_add(1, $fx_add(3, 4))), 2), "{{obj.fruitName}}"), " "))';
+const initialFx = '$capitalize($join($concat("there are",$multiply($divide(16, $add(1, $add(3, 4))), 2), "{{obj.fruitName}}"), " "))';
 
-const initialPayload = JSON.stringify({ obj: { fruitName: 'apples' } });
+const initialPayload = JSON.stringify({ obj: { fruitName: 'apples' } }, null, 4);
 
 function splitArgs(input) {
   let results = [];
@@ -28,7 +28,7 @@ function splitArgs(input) {
 }
 
 const parseFxFromStr = (input: string) => {
-  const fxReg = /^(\$fx_\w+)\((.*)\)$/;
+  const fxReg = /^(\$\w+)\((.*)\)$/;
   if (!fxReg.test(input?.trim())) return safeParse(input?.trim(), undefined);
 
   const [, operator, argStr] = input.trim().match(fxReg);
